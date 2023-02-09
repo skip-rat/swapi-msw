@@ -1,24 +1,25 @@
 import '@testing-library/jest-dom';
 import { render, screen } from '@testing-library/react';
 import App from './App';
-import { rest, setupWorker } from 'msw'
+import { rest } from 'msw'
+import { setupServer } from 'msw/node'
 
-const worker = setupWorker(
+const server = setupServer(
   rest.get(
-    'http://swapi.dev/api/people/1',    
-    (req, res, ctx) => {
-      return res(
-        ctx.json({
-          name: 'Luke Skywalker',
-        }),
-      )
-    },
-  ),
-)
+        'http://swapi.dev/api/people/1',    
+        (req, res, ctx) => {
+          return res(
+            ctx.json({
+              name: 'Luke Skywalker',
+            }),
+          )
+        },
+      ),
+    )
 
-beforeAll(() => worker.start());
-afterEach(() => worker.resetHandlers());
-afterAll(() => worker.stop());
+beforeAll(() => server.listen());
+afterEach(() => server.resetHandlers());
+afterAll(() => server.close());
 
 test('renders and displays Luke Skywalker', async () => {
   render(<App />);
@@ -27,7 +28,7 @@ test('renders and displays Luke Skywalker', async () => {
 
 test('handles server error',
   async () => {
-    worker.use(
+    server.use(
       rest.get('http://swapi.dev/api/people/1', (req, res, ctx) => {
         return res(ctx.status(500))
       }),
@@ -40,7 +41,7 @@ test('handles server error',
 
   test('handles teapot error',
   async () => {
-    worker.use(
+    server.use(
       rest.get('http://swapi.dev/api/people/1', (req, res, ctx) => {
         return res(ctx.status(418))
       }),

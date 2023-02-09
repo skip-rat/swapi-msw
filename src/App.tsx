@@ -1,8 +1,6 @@
 
 import './App.css';
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-
 
 const App : React.FC = () => {
 
@@ -10,10 +8,15 @@ const App : React.FC = () => {
   
 
   const getFirstCharacter = async () => {
-    
-    const apiResponse = await axios.get(`http://swapi.dev/api/people/1`);
         
-    setFirstCharacter(apiResponse.data.name);
+    const apiResponse = await fetch(`http://swapi.dev/api/people/1`);
+    if (!apiResponse.ok) {
+      throw new Error(`Request failed with status code ${apiResponse.status}`);
+    }
+
+    const data = await apiResponse.json();
+        
+    setFirstCharacter(data.name);
   };
 
   useEffect(() => {
